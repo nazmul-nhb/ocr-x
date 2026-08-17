@@ -1,34 +1,26 @@
-# React + TypeScript + Vite
+# OCR X
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+> OCR image and PDF documents in the browser using Google Cloud Vision.
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This app has no Node.js server. It calls the Vision REST API from the browser, so use a browser-restricted Google Cloud API key with the Vision API enabled.
 
-## React Compiler
+The app uses the configured key automatically. If the key is missing, rejected, or has reached its quota, the replacement-key dialog appears. You can also create a local `.env` file:
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+VITE_GOOGLE_VISION_API_KEY=your_browser_restricted_key
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Replacement keys are saved in local storage only when entered through the app. For production, restrict the key to the deployed site origin and to the Cloud Vision API.
+
+PDFs are rendered page-by-page with the locally bundled, typed `pdfjs-dist` package and sent to Vision sequentially. Progress is estimated from the file size, browser network speed, and completed pages.
+
+Completed extractions are saved as filename + extracted text in IndexedDB through `locality-idb`; the original files are never stored. The interface includes persistent light/dark mode, editable extracted text, query-string tabs, and single/all history deletion.
+
+## Commands
+
+```bash
+pnpm dev
+pnpm build
+```

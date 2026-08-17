@@ -1,7 +1,7 @@
 {
   "name": "ocr-x",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,8 +16,10 @@
     "commit": "nhb-commit"
   },
   "dependencies": {
-    "@google-cloud/vision": "^6.0.0",
+    "locality-idb": "^2.6.3",
+    "lucide-react": "^1.31.0",
     "nhb-hooks": "^1.50.11",
+    "pdfjs-dist": "^6.2.108",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "toolbox-x": "^2.6.20"
