@@ -1,0 +1,10 @@
+allowBuilds:
+  protobufjs: false
+
+minimumReleaseAge: 120
+
+minimumReleaseAgeExclude:
+  - toolbox-x
+  - nhb-hooks
+  - nhb-scripts
+  - chronos-date

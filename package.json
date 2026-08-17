@@ -1,0 +1,41 @@
+{
+  "name": "ocr-x",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint --diagnostic-level=warn",
+    "fix": "biome check --write --diagnostic-level=warn",
+    "format": "biome format --write --diagnostic-level=warn",
+    "fixmat": "biome check --write --diagnostic-level=warn && biome format --write --diagnostic-level=warn",
+    "migrate": "biome migrate --write",
+    "commit": "nhb-commit"
+  },
+  "dependencies": {
+    "@google-cloud/vision": "^6.0.0",
+    "nhb-hooks": "^1.50.11",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "toolbox-x": "^2.6.20"
+  },
+  "devDependencies": {
+    "@babel/core": "^8.0.1",
+    "@biomejs/biome": "^2.5.8",
+    "@rolldown/plugin-babel": "^0.2.3",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/babel__core": "^7.20.5",
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.0.5",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "nhb-scripts": "^1.9.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~7.0.2",
+    "vite": "^8.2.1"
+  }
+}
