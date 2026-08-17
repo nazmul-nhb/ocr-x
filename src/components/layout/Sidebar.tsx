@@ -20,7 +20,7 @@ export function Sidebar({
 	onToggleTheme,
 }: SidebarProps) {
 	return (
-		<aside className="sidebar">
+		<aside className="sidebar max-h-screen">
 			<div className="brand">
 				<span className="brand-mark">
 					<ScanLine size={19} strokeWidth={2.1} />
