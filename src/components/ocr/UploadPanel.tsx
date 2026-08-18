@@ -24,10 +24,11 @@ export function UploadPanel({
 	onDragChange,
 	onRemove,
 }: UploadPanelProps) {
+	const isPdf = file ? fileKind(file) === 'PDF' : false;
 	return (
-		<div className="upload-panel">
+		<div className="min-w-0 rounded-2xl border bg-card p-3 shadow-sm sm:p-4">
 			<div
-				className={`dropzone ${isDragging ? 'dragging' : ''} ${file ? 'has-file' : ''}`}
+				className={`relative flex min-h-[19rem] flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed p-6 text-center transition-colors sm:min-h-[22rem] ${isDragging ? 'border-primary bg-primary/10' : 'border-border bg-muted/20 hover:border-primary/50 hover:bg-primary/[0.03]'} ${file ? 'flex-row gap-4 sm:gap-5' : ''}`}
 				onDragEnter={(event) => {
 					event.preventDefault();
 					onDragChange(true);
@@ -40,6 +41,7 @@ export function UploadPanel({
 			>
 				<input
 					accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+					className="absolute inset-0 z-10 cursor-pointer opacity-0"
 					onChange={(event) => {
 						const picked = event.target.files?.[0];
 						if (picked) onSelect(picked);
@@ -49,49 +51,70 @@ export function UploadPanel({
 				/>
 				{file ? (
 					<>
-						<div className={`file-icon ${fileKind(file) === 'PDF' ? 'pdf' : ''}`}>
-							{fileKind(file) === 'PDF' ? (
-								<FileText size={25} />
+						<div
+							className={`grid size-16 shrink-0 place-items-center rounded-2xl ${isPdf ? 'bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-primary/10 text-primary'}`}
+						>
+							{isPdf ? (
+								<FileText className="size-7" />
 							) : (
-								<Image size={25} />
+								<Image className="size-7" />
 							)}
 						</div>
-						<div className="selected-file">
-							<strong>{file.name}</strong>
-							<span>
+						<div className="min-w-0 text-left">
+							<strong className="block truncate text-base font-semibold sm:text-lg">
+								{file.name}
+							</strong>
+							<span className="mt-1 block text-sm text-muted-foreground">
 								{fileKind(file)} · {formatBytes(file.size)}
 							</span>
 						</div>
 						<button
 							aria-label="Remove file"
-							className="remove-file"
+							className="relative z-20 ml-auto grid size-10 shrink-0 place-items-center rounded-full text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
 							onClick={(event) => {
 								event.stopPropagation();
 								onRemove();
 							}}
 							type="button"
 						>
-							<X size={17} />
+							<X className="size-5" />
 						</button>
 					</>
 				) : (
 					<>
-						<div className="upload-icon">
-							<Upload size={25} />
+						<div className="mb-5 grid size-16 place-items-center rounded-2xl bg-primary/10 text-primary">
+							<Upload className="size-7" />
 						</div>
-						<h2>Drop your file here</h2>
-						<p>
+						<h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+							Drop your file here
+						</h2>
+						<p className="mt-2 text-base text-muted-foreground">
 							or{' '}
-							<button onClick={() => inputRef.current?.click()} type="button">
+							<button
+								className="relative z-20 font-semibold text-primary underline-offset-4 hover:underline"
+								onClick={(event) => {
+									event.stopPropagation();
+									inputRef.current?.click();
+								}}
+								type="button"
+							>
 								browse from your computer
 							</button>
 						</p>
-						<div className="file-types">
-							<span>JPG</span>
-							<span>PNG</span>
-							<span>WEBP</span>
-							<span>PDF</span>
-							<span className="type-limit">
+						<div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs font-semibold tracking-wide text-muted-foreground">
+							<span className="rounded-md border bg-background px-2.5 py-1.5">
+								JPG
+							</span>
+							<span className="rounded-md border bg-background px-2.5 py-1.5">
+								PNG
+							</span>
+							<span className="rounded-md border bg-background px-2.5 py-1.5">
+								WEBP
+							</span>
+							<span className="rounded-md border bg-background px-2.5 py-1.5">
+								PDF
+							</span>
+							<span className="px-1 font-normal tracking-normal">
 								up to {MAX_FILE_SIZE / 1024 / 1024} MB
 							</span>
 						</div>
@@ -99,14 +122,14 @@ export function UploadPanel({
 				)}
 			</div>
 			{error && (
-				<div className="error-message">
-					<X size={15} />
+				<div className="mt-3 flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
+					<X className="mt-0.5 size-4 shrink-0" />
 					<span>{error}</span>
 				</div>
 			)}
-			<div className="upload-footer">
-				<span>
-					<Sparkles size={15} /> AI-powered extraction
+			<div className="flex flex-wrap items-center justify-between gap-2 px-1 pt-4 text-xs text-muted-foreground">
+				<span className="inline-flex items-center gap-1.5">
+					<Sparkles className="size-3.5 text-primary" /> AI-powered extraction
 				</span>
 				<span>One file at a time</span>
 			</div>

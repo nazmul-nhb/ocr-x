@@ -1,5 +1,9 @@
+import { FileOutput, ShieldCheck, Sparkles } from 'lucide-react';
+import { useCopyText, useStorage } from 'nhb-hooks';
 import type { DragEvent } from 'react';
 import { useCallback, useRef, useState } from 'react';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { AppTabs } from './components/layout/AppTabs';
 import { Sidebar } from './components/layout/Sidebar';
 import { Topbar } from './components/layout/Topbar';
@@ -26,11 +30,11 @@ export default function App() {
 	const [isDragging, setIsDragging] = useState(false);
 	const [showSettings, setShowSettings] = useState(false);
 	const [settingsMessage, setSettingsMessage] = useState('');
-	const [apiKey, setApiKey] = useState(
-		() => localStorage.getItem(API_KEY_STORAGE) ?? DEFAULT_API_KEY
-	);
-	const [copied, setCopied] = useState(false);
-	const [sidebarOpen, setSidebarOpen] = useState(false);
+
+	const { set: setApiKey, value: apiKey = DEFAULT_API_KEY } = useStorage<string>({
+		key: API_KEY_STORAGE,
+	});
+
 	const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const { history, isLoading, add, remove, clear } = useHistory();
@@ -74,7 +78,7 @@ export default function App() {
 		setProgress(4);
 		setProgressLabel('Preparing document');
 		try {
-			const text = await extractText(file, apiKey.trim(), {
+			const text = await extractText(file, (apiKey as string).trim(), {
 				onProgress: setProgress,
 				onLabel: setProgressLabel,
 			});
@@ -122,9 +126,8 @@ export default function App() {
 	};
 
 	const saveApiKey = () => {
-		const nextKey = apiKey.trim();
+		const nextKey = apiKey?.trim();
 		if (!nextKey) return;
-		localStorage.setItem(API_KEY_STORAGE, nextKey);
 		setApiKey(nextKey);
 		setShowSettings(false);
 		setSettingsMessage('');
@@ -132,12 +135,14 @@ export default function App() {
 		setError('API key updated. Start extraction to try again.');
 	};
 
-	const copyResult = async () => {
-		if (!result) return;
-		await navigator.clipboard.writeText(result);
-		setCopied(true);
-		window.setTimeout(() => setCopied(false), 1800);
-	};
+	// const copyResult = async () => {
+	// 	if (!result) return;
+	// 	await navigator.clipboard.writeText(result);
+	// 	setCopied(true);
+	// 	window.setTimeout(() => setCopied(false), 1800);
+	// };
+
+	const { copiedText, copyToClipboard } = useCopyText({});
 
 	const downloadResult = () => {
 		if (!result) return;
@@ -181,151 +186,137 @@ export default function App() {
 		navigateTo('history');
 	};
 
-	const navigateFromSidebar = (tab: 'scan' | 'history') => {
-		setSidebarOpen(false);
-		navigateTo(tab);
-	};
-
 	return (
-		<div className="app-shell">
-			<Sidebar
-				activeTab={activeTab}
-				historyCount={history.length}
-				onHistory={() => navigateFromSidebar('history')}
-				onNewScan={() => {
-					reset();
-					navigateFromSidebar('scan');
-				}}
-				onToggleTheme={toggleTheme}
-				theme={theme}
-			/>
-			{sidebarOpen && (
-				<button
-					aria-label="Close navigation"
-					className="mobile-scrim"
-					onClick={() => setSidebarOpen(false)}
-					type="button"
+		<TooltipProvider>
+			<SidebarProvider defaultOpen>
+				<Sidebar
+					activeTab={activeTab}
+					historyCount={history.length}
+					onHistory={() => navigateTo('history')}
+					onNewScan={() => {
+						reset();
+						navigateTo('scan');
+					}}
 				/>
-			)}
-			<div className="main-area">
-				<Topbar
-					onMenu={() => setSidebarOpen((open) => !open)}
-					onToggleTheme={toggleTheme}
-					theme={theme}
-				/>
-				<main className="content">
-					<section className="intro">
-						<div>
-							<div className="eyebrow">
-								<span className="eyebrow-line" />
-								DOCUMENT INTELLIGENCE
-							</div>
-							<h1>
-								Turn documents
-								<br />
-								<em>into text.</em>
-							</h1>
-							<p>
-								Extract clear, accurate text from images and PDFs
-								<br className="desktop-break" /> with the power of Google
-								Vision.
-							</p>
-						</div>
-						<div className="intro-meta">
-							<div className="secure-chip">
-								<span className="secure-check">✓</span>
-								<span>Text only history</span>
-							</div>
-							<span className="meta-note">Files are never stored</span>
-						</div>
-					</section>
-					<AppTabs
-						activeTab={activeTab}
-						hasResult={Boolean(result)}
-						historyCount={history.length}
-						onChange={navigateTo}
-					/>
-					{activeTab === 'scan' && (
-						<>
-							<section className="scan-layout">
-								<UploadPanel
-									error={error}
-									file={file}
-									inputRef={inputRef}
-									isDragging={isDragging}
-									onDragChange={setIsDragging}
-									onDrop={handleDrop}
-									onRemove={reset}
-									onSelect={selectFile}
-								/>
-								<ProgressPanel
-									file={file}
-									label={progressLabel}
-									onStart={startScan}
-									progress={progress}
-									status={status}
-								/>
-							</section>
-							<div className="tip-bar">
-								<div className="tip-icon">✦</div>
-								<p>
-									<strong>Tip:</strong> For best results, use clear, well-lit
-									scans with high contrast.
+				<SidebarInset className="min-h-svh bg-background">
+					<Topbar activeTab={activeTab} onToggleTheme={toggleTheme} theme={theme} />
+					<main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10 lg:px-10">
+						<section className="mb-8 flex flex-col justify-between gap-6 lg:mb-10 lg:flex-row lg:items-end">
+							<div className="min-w-0">
+								<div className="mb-4 flex items-center gap-2 text-xs font-semibold tracking-[0.18em] text-primary sm:text-sm">
+									<span className="h-px w-8 bg-primary" /> DOCUMENT
+									INTELLIGENCE
+								</div>
+								<h1 className="text-5xl font-semibold leading-[0.98] tracking-[-0.06em] text-foreground sm:text-6xl lg:text-7xl">
+									Turn documents{' '}
+									<span className="text-primary">into text.</span>
+								</h1>
+								<p className="mt-5 text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
+									Extract clear, accurate text from images and PDFs with the
+									power of Google Vision.
 								</p>
 							</div>
-						</>
-					)}
-					{activeTab === 'extracted' &&
-						(result ? (
-							<ResultPanel
-								copied={copied}
-								filename={resultFilename}
-								onCopy={copyResult}
-								onDownload={downloadResult}
-								onTextChange={setResult}
-								text={result}
-							/>
-						) : (
-							<div className="tab-empty">
-								<FileOutputIcon />
-								<strong>No extracted text yet</strong>
-								<span>
-									Run a scan or choose an item from History to edit its text
-									here.
+							<div className="flex shrink-0 flex-col gap-2 text-sm text-muted-foreground sm:items-end">
+								<span className="inline-flex items-center gap-2 font-medium text-foreground">
+									<ShieldCheck className="size-4 text-emerald-500" /> Text
+									Only History
 								</span>
-								<button onClick={() => navigateTo('scan')} type="button">
-									Start a scan
-								</button>
+								<span>Files are never stored</span>
 							</div>
-						))}
-					{activeTab === 'history' && (
-						<HistoryList
-							entries={history}
-							isLoading={isLoading}
-							onClear={() => void handleClearHistory()}
-							onDelete={(entry) => void handleDeleteHistory(entry)}
-							onSelect={selectHistory}
+						</section>
+						<AppTabs
+							activeTab={activeTab}
+							hasResult={Boolean(result)}
+							historyCount={history.length}
+							onChange={navigateTo}
 						/>
-					)}
-				</main>
-			</div>
-			{showSettings && (
-				<ApiKeyModal
-					message={settingsMessage}
-					onChange={setApiKey}
-					onClose={() => setShowSettings(false)}
-					onSave={saveApiKey}
-					value={apiKey}
-				/>
-			)}
-		</div>
-	);
-}
-
-function FileOutputIcon() {
-	return (
-		<span className="tab-empty-icon">
-			<span>✦</span>
-		</span>
+						{activeTab === 'scan' && (
+							<>
+								<section className="grid min-w-0 grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.3fr)_minmax(20rem,0.7fr)]">
+									<UploadPanel
+										error={error}
+										file={file}
+										inputRef={inputRef}
+										isDragging={isDragging}
+										onDragChange={setIsDragging}
+										onDrop={handleDrop}
+										onRemove={reset}
+										onSelect={selectFile}
+									/>
+									<ProgressPanel
+										file={file}
+										label={progressLabel}
+										onStart={startScan}
+										progress={progress}
+										status={status}
+									/>
+								</section>
+								<div className="mt-5 flex items-start gap-3 rounded-xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm text-muted-foreground sm:items-center">
+									<Sparkles className="mt-0.5 size-4 shrink-0 text-primary sm:mt-0" />
+									<p>
+										<strong className="font-semibold text-foreground">
+											Tip:
+										</strong>{' '}
+										For best results, use clear, well-lit scans with high
+										contrast.
+									</p>
+								</div>
+							</>
+						)}
+						{activeTab === 'extracted' &&
+							(result ? (
+								<ResultPanel
+									copied={Boolean(copiedText)}
+									filename={resultFilename}
+									onCopy={() => {
+										copyToClipboard(result, 'Text copied successfully!');
+									}}
+									onDownload={downloadResult}
+									onTextChange={setResult}
+									text={result}
+								/>
+							) : (
+								<div className="flex min-h-88 flex-col items-center justify-center rounded-2xl border border-dashed bg-card px-6 py-12 text-center shadow-sm">
+									<span className="mb-4 grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
+										<FileOutput className="size-6" />
+									</span>
+									<strong className="text-xl font-semibold">
+										No extracted text yet
+									</strong>
+									<span className="mt-2 max-w-md text-base leading-7 text-muted-foreground">
+										Run a scan or choose an item from History to edit its
+										text here.
+									</span>
+									<button
+										className="mt-6 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
+										onClick={() => navigateTo('scan')}
+										type="button"
+									>
+										Start a scan
+									</button>
+								</div>
+							))}
+						{activeTab === 'history' && (
+							<HistoryList
+								entries={history}
+								isLoading={isLoading}
+								onClear={() => void handleClearHistory()}
+								onDelete={(entry) => void handleDeleteHistory(entry)}
+								onSelect={selectHistory}
+							/>
+						)}
+					</main>
+				</SidebarInset>
+				{showSettings && (
+					<ApiKeyModal
+						message={settingsMessage}
+						onChange={setApiKey}
+						onClose={() => setShowSettings(false)}
+						onSave={saveApiKey}
+						value={apiKey as string}
+					/>
+				)}
+			</SidebarProvider>
+		</TooltipProvider>
 	);
 }

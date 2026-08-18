@@ -1,4 +1,7 @@
 import { Check, Clipboard, Download, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '../ui/scroll-area';
 
 type ResultPanelProps = {
 	filename: string;
@@ -18,33 +21,41 @@ export function ResultPanel({
 	onDownload,
 }: ResultPanelProps) {
 	return (
-		<section className="result-panel">
-			<div className="result-heading">
-				<div>
-					<span className="section-kicker">EXTRACTED TEXT</span>
-					<h2>
-						<FileText size={17} />
-						{filename}
+		<section className="rounded-2xl border bg-card p-5 shadow-sm sm:p-7">
+			<div className="flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-center sm:justify-between">
+				<div className="min-w-0">
+					<span className="text-xs font-semibold tracking-[0.16em] text-muted-foreground">
+						EXTRACTED TEXT
+					</span>
+					<h2 className="mt-2 flex min-w-0 items-center gap-2 text-xl font-semibold tracking-tight sm:text-2xl">
+						<FileText className="size-5 shrink-0 text-primary" />
+						<span className="truncate">{filename}</span>
 					</h2>
 				</div>
-				<div className="result-actions">
-					<button onClick={onCopy} type="button">
-						{copied ? <Check size={15} /> : <Clipboard size={15} />}
-						{copied ? 'Copied' : 'Copy text'}
-					</button>
-					<button onClick={onDownload} type="button">
-						<Download size={15} />
+				<div className="flex flex-wrap gap-2">
+					<Button onClick={onCopy} size="sm" variant="outline">
+						{copied ? (
+							<Check className="size-4" />
+						) : (
+							<Clipboard className="size-4" />
+						)}
+						{copied ? 'Copied' : 'Copy Extracted'}
+					</Button>
+					<Button onClick={onDownload} size="sm" variant="outline">
+						<Download className="size-4" />
 						Export .txt
-					</button>
+					</Button>
 				</div>
 			</div>
-			<textarea
-				aria-label={`Extracted text from ${filename}`}
-				className="result-body"
-				onChange={(event) => onTextChange(event.target.value)}
-				spellCheck="false"
-				value={text}
-			/>
+			<ScrollArea className="mt-6 h-80 sm:h-128">
+				<Textarea
+					aria-label={`Extracted text from ${filename}`}
+					className="resize-y font-mono text-sm leading-7 sm:text-base rounded-none"
+					onChange={(event) => onTextChange(event.target.value)}
+					spellCheck="false"
+					value={text}
+				/>
+			</ScrollArea>
 		</section>
 	);
 }

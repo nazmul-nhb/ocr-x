@@ -1,34 +1,44 @@
-import { Menu, Moon, Sun } from 'lucide-react';
-import type { Theme } from '../../types/ocr';
+import { Moon, Sun } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import type { AppTab, Theme } from '../../types/ocr';
 
-type TopbarProps = { theme: Theme; onToggleTheme: () => void; onMenu: () => void };
+type TopbarProps = { activeTab: AppTab; theme: Theme; onToggleTheme: () => void };
 
-export function Topbar({ theme, onToggleTheme, onMenu }: TopbarProps) {
+export function Topbar({ activeTab, theme, onToggleTheme }: TopbarProps) {
+	const label =
+		activeTab === 'history'
+			? 'History'
+			: activeTab === 'extracted'
+				? 'Extracted Text'
+				: 'New Scan';
 	return (
-		<header className="topbar">
-			<button
-				aria-label="Open navigation"
-				className="mobile-menu"
-				onClick={onMenu}
-				type="button"
-			>
-				<Menu size={19} />
-			</button>
-			<div className="breadcrumbs">
-				<span>OCR Workspace</span>
-				<span>/</span>
-				<strong>New Scan</strong>
+		<header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/90 px-4 backdrop-blur md:px-8">
+			<div className="flex items-center gap-3">
+				<SidebarTrigger className="md:hidden" />
+				<div className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex">
+					<span>OCR workspace</span>
+					<span>/</span>
+					<span className="font-medium text-foreground">{label}</span>
+				</div>
+				<span className="text-sm font-medium text-foreground sm:hidden">OCR X</span>
 			</div>
-			<div className="top-actions">
-				<span className="top-caption">Your files stay in your browser</span>
-				<button
+			<div className="flex items-center gap-2">
+				<span className="hidden text-xs text-muted-foreground lg:inline">
+					Your files stay in your browser
+				</span>
+				<Button
 					aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-					className="icon-button theme-button"
 					onClick={onToggleTheme}
-					type="button"
+					size="icon"
+					variant="ghost"
 				>
-					{theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
-				</button>
+					{theme === 'light' ? (
+						<Moon className="size-4" />
+					) : (
+						<Sun className="size-4" />
+					)}
+				</Button>
 			</div>
 		</header>
 	);

@@ -1,4 +1,5 @@
 import { FileOutput, FileScan, History } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { AppTab } from '../../types/ocr';
 
 type AppTabsProps = {
@@ -8,31 +9,40 @@ type AppTabsProps = {
 	historyCount: number;
 };
 
-const tabItems: Array<{ id: AppTab; label: string; icon: typeof FileScan }> = [
-	{ id: 'scan', label: 'New Scan', icon: FileScan },
-	{ id: 'extracted', label: 'Extracted Text', icon: FileOutput },
-	{ id: 'history', label: 'History', icon: History },
-];
-
 export function AppTabs({ activeTab, onChange, hasResult, historyCount }: AppTabsProps) {
 	return (
-		<nav aria-label="OCR workspace tabs" className="app-tabs">
-			{tabItems.map(({ id, label, icon: Icon }) => (
-				<button
-					aria-current={activeTab === id ? 'page' : undefined}
-					className={`app-tab ${activeTab === id ? 'active' : ''}`}
-					key={id}
-					onClick={() => onChange(id)}
-					type="button"
+		<Tabs className="mb-6 w-full" onValueChange={onChange} value={activeTab}>
+			<TabsList className="w-full">
+				<TabsTrigger
+					// className="min-w-0 gap-1.5 px-2 text-xs sm:gap-2 sm:px-3 sm:text-base"
+					value="scan"
 				>
-					<Icon size={16} />
-					<span>{label}</span>
-					{id === 'extracted' && hasResult && <span className="tab-state-dot" />}
-					{id === 'history' && historyCount > 0 && (
-						<span className="tab-count">{historyCount}</span>
+					<FileScan className="size-4 shrink-0" />
+					<span className="truncate">New Scan</span>
+				</TabsTrigger>
+				<TabsTrigger
+					// className="min-w-0 gap-1.5 px-2 text-xs sm:gap-2 sm:px-3 sm:text-base"
+					value="extracted"
+				>
+					<FileOutput className="size-4 shrink-0" />
+					<span className="truncate">Extracted Text</span>
+					{hasResult && (
+						<span className="size-2 shrink-0 rounded-full bg-emerald-500" />
 					)}
-				</button>
-			))}
-		</nav>
+				</TabsTrigger>
+				<TabsTrigger
+					// className="min-w-0 gap-1.5 px-2 text-xs sm:gap-2 sm:px-3 sm:text-base"
+					value="history"
+				>
+					<History className="size-4 shrink-0" />
+					<span className="truncate">History</span>
+					{historyCount > 0 && (
+						<span className="shrink-0 rounded-full bg-primary/10 px-1.5 text-xs text-primary">
+							{historyCount}
+						</span>
+					)}
+				</TabsTrigger>
+			</TabsList>
+		</Tabs>
 	);
 }
