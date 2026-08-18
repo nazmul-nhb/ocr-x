@@ -1,4 +1,4 @@
-import { Copyright, FileClock, FilePlus2, History, ScanLine } from 'lucide-react';
+import { Copyright, FileClock, FilePlus2, History } from 'lucide-react';
 import {
 	Sidebar as ShadcnSidebar,
 	SidebarContent,
@@ -28,8 +28,24 @@ export function Sidebar({ activeTab, historyCount, onNewScan, onHistory }: Sideb
 		<ShadcnSidebar className="border-sidebar-border bg-sidebar" collapsible="offcanvas">
 			<SidebarHeader className="p-5">
 				<div className="flex items-center gap-3 text-lg font-semibold tracking-tight text-sidebar-foreground">
-					<span className="grid size-9 place-items-center rounded-sm bg-primary text-primary-foreground shadow-sm">
-						<ScanLine className="size-5" />
+					<span className="grid size-8 place-items-center rounded-xs bg-primary text-primary-foreground shadow-sm">
+						<svg
+							height="1.5em"
+							viewBox="0 0 20 20"
+							width="1.5em"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path d="M0 0h20v20H0z" fill="none" />
+							<path
+								d="M3 17h5v2H1v-7h2zm16 2h-7v-2h5v-5h2z"
+								fill="currentColor"
+							/>
+							<path
+								d="M15 15H5v-2h10zm-2-4H7V9h6zM8 3H3v5H1V1h7zm11 5h-2V3h-5V1h7z"
+								fill="currentColor"
+							/>
+							<path d="M15 7H5V5h10z" fill="currentColor" />
+						</svg>
 					</span>
 					<span>
 						ocr<span className="text-primary">.</span>x
