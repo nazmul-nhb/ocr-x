@@ -16,6 +16,7 @@ import { API_KEY_STORAGE, DEFAULT_API_KEY, MAX_FILE_SIZE } from './constants/ocr
 import { useHistory } from './hooks/useHistory';
 import { useTabNavigation } from './hooks/useTabNavigation';
 import { useTheme } from './hooks/useTheme';
+import { cipher } from './lib/utils';
 import { extractText, isAcceptedFile, VisionApiError } from './lib/vision';
 import type { Extraction, ProcessStatus } from './types/ocr';
 
@@ -31,8 +32,11 @@ export default function App() {
 	const [showSettings, setShowSettings] = useState(false);
 	const [settingsMessage, setSettingsMessage] = useState('');
 
-	const { set: setApiKey, value: apiKey = DEFAULT_API_KEY } = useStorage<string>({
+	const { set: setApiKey, value: apiKey } = useStorage<string, string>({
 		key: API_KEY_STORAGE,
+		defaultValue: DEFAULT_API_KEY,
+		serialize: (value) => cipher.encrypt(value),
+		deserialize: (value) => cipher.decrypt(value),
 	});
 
 	const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null);
@@ -48,7 +52,9 @@ export default function App() {
 			return;
 		}
 		if (nextFile.size > MAX_FILE_SIZE) {
-			setError('That file is larger than 20 MB. Try a smaller scan.');
+			setError(
+				`That file is larger than ${MAX_FILE_SIZE / 1024 / 1024} MB. Try a smaller scan.`
+			);
 			setStatus('error');
 			return;
 		}
@@ -78,7 +84,7 @@ export default function App() {
 		setProgress(4);
 		setProgressLabel('Preparing document');
 		try {
-			const text = await extractText(file, (apiKey as string).trim(), {
+			const text = await extractText(file, apiKey?.trim(), {
 				onProgress: setProgress,
 				onLabel: setProgressLabel,
 			});
@@ -135,14 +141,7 @@ export default function App() {
 		setError('API key updated. Start extraction to try again.');
 	};
 
-	// const copyResult = async () => {
-	// 	if (!result) return;
-	// 	await navigator.clipboard.writeText(result);
-	// 	setCopied(true);
-	// 	window.setTimeout(() => setCopied(false), 1800);
-	// };
-
-	const { copiedText, copyToClipboard } = useCopyText({});
+	const { copiedText, copyToClipboard } = useCopyText();
 
 	const downloadResult = () => {
 		if (!result) return;
@@ -283,9 +282,8 @@ export default function App() {
 									<strong className="text-xl font-semibold">
 										No extracted text yet
 									</strong>
-									<span className="mt-2 max-w-md text-base leading-7 text-muted-foreground">
-										Run a scan or choose an item from History to edit its
-										text here.
+									<span className="mt-2 text-base leading-7 text-muted-foreground">
+										Run a scan or choose from History to edit its text.
 									</span>
 									<button
 										className="mt-6 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
@@ -307,15 +305,15 @@ export default function App() {
 						)}
 					</main>
 				</SidebarInset>
-				{showSettings && (
+				{showSettings ? (
 					<ApiKeyModal
 						message={settingsMessage}
 						onChange={setApiKey}
 						onClose={() => setShowSettings(false)}
 						onSave={saveApiKey}
-						value={apiKey as string}
+						value={apiKey}
 					/>
-				)}
+				) : null}
 			</SidebarProvider>
 		</TooltipProvider>
 	);

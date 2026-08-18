@@ -12,7 +12,7 @@ type AppTabsProps = {
 export function AppTabs({ activeTab, onChange, hasResult, historyCount }: AppTabsProps) {
 	return (
 		<Tabs className="mb-6 w-full" onValueChange={onChange} value={activeTab}>
-			<TabsList className="w-full">
+			<TabsList className="" variant="line">
 				<TabsTrigger
 					// className="min-w-0 gap-1.5 px-2 text-xs sm:gap-2 sm:px-3 sm:text-base"
 					value="scan"
@@ -26,9 +26,9 @@ export function AppTabs({ activeTab, onChange, hasResult, historyCount }: AppTab
 				>
 					<FileOutput className="size-4 shrink-0" />
 					<span className="truncate">Extracted Text</span>
-					{hasResult && (
+					{hasResult ? (
 						<span className="size-2 shrink-0 rounded-full bg-emerald-500" />
-					)}
+					) : null}
 				</TabsTrigger>
 				<TabsTrigger
 					// className="min-w-0 gap-1.5 px-2 text-xs sm:gap-2 sm:px-3 sm:text-base"
