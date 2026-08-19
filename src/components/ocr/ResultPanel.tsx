@@ -47,7 +47,7 @@ export function ResultPanel({
 					</Button>
 				</div>
 			</div>
-			<ScrollArea className="mt-6 h-80 sm:h-128">
+			<ScrollArea className="mt-6 h-80 sm:h-90">
 				<Textarea
 					aria-label={`Extracted text from ${filename}`}
 					className="resize-y font-mono text-sm leading-7 sm:text-base rounded-none"
