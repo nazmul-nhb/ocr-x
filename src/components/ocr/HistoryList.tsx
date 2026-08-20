@@ -37,7 +37,7 @@ export function HistoryList({
 					</h2>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
-					<Badge className="gap-1.5 px-2.5 py-1 text-xs" variant="secondary">
+					<Badge className="gap-1.5 p-2.5 py-3 text-xs" variant="default">
 						<History className="size-3.5" /> Text only · stored locally
 					</Badge>
 					{entries.length > 0 && (
@@ -45,7 +45,7 @@ export function HistoryList({
 							className="gap-1.5"
 							onClick={onClear}
 							size="sm"
-							variant="outline"
+							variant="destructive"
 						>
 							<Trash2 className="size-3.5" /> Clear all
 						</Button>

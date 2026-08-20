@@ -11,7 +11,7 @@ export const historySchema = defineSchema({
 
 export const historyDb = new Locality({
 	dbName: 'ocr-x-history',
-	version: 1,
+	version: 3,
 	schema: historySchema,
 });
 

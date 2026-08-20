@@ -124,7 +124,15 @@ function estimateDuration(file: File) {
 	return Math.round((Math.max(1.8, file.size / (downlink * 125000)) + 4.5) * 10) / 10;
 }
 
-export function estimatedScanTime(file: Nullable<File>) {
+export function estimatedScanTime(file: Nullable<File> | File[]) {
+	if (Array.isArray(file)) {
+		if (file.length === 0) return '—';
+		const seconds = file.reduce(
+			(total, currentFile) => total + estimateDuration(currentFile),
+			0
+		);
+		return `~${Math.round(seconds * 10) / 10} sec`;
+	}
 	return file ? `~${estimateDuration(file)} sec` : '—';
 }
 

@@ -17,7 +17,7 @@ export function Topbar({ activeTab, theme, onToggleTheme }: TopbarProps) {
 			<div className="flex items-center gap-3">
 				<SidebarTrigger className="md:hidden" />
 				<div className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex">
-					<span>OCR workspace</span>
+					<span>OCR Workspace</span>
 					<span>/</span>
 					<span className="font-medium text-foreground">{label}</span>
 				</div>

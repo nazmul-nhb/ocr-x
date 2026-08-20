@@ -1,28 +1,41 @@
+import type { $UUID } from 'locality-idb';
 import { FileOutput, ShieldCheck, Sparkles } from 'lucide-react';
 import { useCopyText, useStorage } from 'nhb-hooks';
 import type { DragEvent } from 'react';
 import { Fragment, useCallback, useRef, useState } from 'react';
 import type { Nullable } from 'toolbox-x/types';
+import { AppTabs } from '@/components/layout/AppTabs';
+import { Sidebar } from '@/components/layout/Sidebar';
+import { Topbar } from '@/components/layout/Topbar';
+import { FilePreviewDialog } from '@/components/ocr/FilePreviewDialog';
+import { HistoryList } from '@/components/ocr/HistoryList';
+import { ProgressPanel } from '@/components/ocr/ProgressPanel';
+import { ResultPanel } from '@/components/ocr/ResultPanel';
+import { UploadPanel } from '@/components/ocr/UploadPanel';
+import { ApiKeyModal } from '@/components/settings/ApiKeyModal';
+import { Button } from '@/components/ui/button';
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { AppTabs } from './components/layout/AppTabs';
-import { Sidebar } from './components/layout/Sidebar';
-import { Topbar } from './components/layout/Topbar';
-import { HistoryList } from './components/ocr/HistoryList';
-import { ProgressPanel } from './components/ocr/ProgressPanel';
-import { ResultPanel } from './components/ocr/ResultPanel';
-import { UploadPanel } from './components/ocr/UploadPanel';
-import { ApiKeyModal } from './components/settings/ApiKeyModal';
-import { API_KEY_STORAGE, DEFAULT_API_KEY, MAX_FILE_SIZE } from './constants/ocr';
-import { useHistory } from './hooks/useHistory';
-import { useTabNavigation } from './hooks/useTabNavigation';
-import { useTheme } from './hooks/useTheme';
-import { cipher } from './lib/utils';
-import { extractText, isAcceptedFile, VisionApiError } from './lib/vision';
-import type { Extraction, ProcessStatus } from './types/ocr';
+import { API_KEY_STORAGE, DEFAULT_API_KEY, MAX_FILE_SIZE } from '@/constants/ocr';
+import { useHistory } from '@/hooks/useHistory';
+import { useTabNavigation } from '@/hooks/useTabNavigation';
+import { useTheme } from '@/hooks/useTheme';
+import { cipher } from '@/lib/utils';
+import { extractText, isAcceptedFile, VisionApiError } from '@/lib/vision';
+import type { Extraction, ProcessStatus } from '@/types/ocr';
 
 export default function App() {
-	const [file, setFile] = useState<Nullable<File>>(null);
+	const [files, setFiles] = useState<File[]>([]);
+	const [previewFile, setPreviewFile] = useState<Nullable<File>>(null);
 	const [status, setStatus] = useState<ProcessStatus>('idle');
 	const [progress, setProgress] = useState(0);
 	const [progressLabel, setProgressLabel] = useState('Ready when you are');
@@ -32,6 +45,7 @@ export default function App() {
 	const [isDragging, setIsDragging] = useState(false);
 	const [showSettings, setShowSettings] = useState(false);
 	const [settingsMessage, setSettingsMessage] = useState('');
+	const [showClearHistoryDialog, setShowClearHistoryDialog] = useState(false);
 
 	const { set: setApiKey, value: apiKey } = useStorage<string, string>({
 		key: API_KEY_STORAGE,
@@ -40,65 +54,107 @@ export default function App() {
 		deserialize: (value) => cipher.decrypt(value),
 	});
 
-	const [selectedHistoryId, setSelectedHistoryId] = useState<Nullable<string>>(null);
+	const [selectedHistoryId, setSelectedHistoryId] = useState<Nullable<$UUID>>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const { history, isLoading, add, remove, clear } = useHistory();
 	const { theme, toggleTheme } = useTheme();
 	const { activeTab, navigateTo } = useTabNavigation();
 
-	const selectFile = useCallback((nextFile: File) => {
-		if (!isAcceptedFile(nextFile)) {
-			setError('Please choose a JPG, PNG, WEBP, GIF, or PDF file.');
-			setStatus('error');
-			return;
-		}
-		if (nextFile.size > MAX_FILE_SIZE) {
-			setError(
-				`That file is larger than ${MAX_FILE_SIZE / 1024 / 1024} MB. Try a smaller scan.`
+	const selectFiles = useCallback((nextFiles: File[]) => {
+		const rejected: string[] = [];
+		const accepted = nextFiles.filter((nextFile) => {
+			if (!isAcceptedFile(nextFile)) {
+				rejected.push(`${nextFile.name}: unsupported file type`);
+				return false;
+			}
+			if (nextFile.size > MAX_FILE_SIZE) {
+				rejected.push(
+					`${nextFile.name}: larger than ${MAX_FILE_SIZE / 1024 / 1024} MB`
+				);
+				return false;
+			}
+			return true;
+		});
+		setFiles((current) => {
+			const existing = new Set(
+				current.map((file) => `${file.name}-${file.size}-${file.lastModified}`)
 			);
-			setStatus('error');
-			return;
+			const unique = accepted.filter((file) => {
+				const key = `${file.name}-${file.size}-${file.lastModified}`;
+				if (existing.has(key)) return false;
+				existing.add(key);
+				return true;
+			});
+			return [...current, ...unique];
+		});
+		if (accepted.length > 0) {
+			setStatus('idle');
+			setProgress(0);
+			setProgressLabel('Ready to extract');
+			setResult('');
+			setResultFilename('');
+			setSelectedHistoryId(null);
 		}
-		setFile(nextFile);
-		setStatus('idle');
-		setProgress(0);
-		setProgressLabel('Ready to extract');
-		setError('');
-		setResult('');
-		setResultFilename('');
-		setSelectedHistoryId(null);
+		setError(rejected.length > 0 ? `Some files were skipped: ${rejected.join('; ')}` : '');
 	}, []);
 
 	const handleDrop = (event: DragEvent<HTMLDivElement>) => {
 		event.preventDefault();
 		setIsDragging(false);
-		const droppedFile = event.dataTransfer.files[0];
-		if (droppedFile) selectFile(droppedFile);
+		const droppedFiles = Array.from(event.dataTransfer.files);
+		if (droppedFiles.length > 0) selectFiles(droppedFiles);
 	};
 
 	const startScan = async () => {
-		if (!file) return;
+		if (files.length === 0) return;
+		const filesToScan = files;
+		const totalFiles = filesToScan.length;
 		setStatus('processing');
 		setError('');
 		setResult('');
 		setResultFilename('');
-		setProgress(4);
+		setProgress(3);
 		setProgressLabel('Preparing document');
 		try {
-			const text = await extractText(file, apiKey?.trim(), {
-				onProgress: setProgress,
-				onLabel: setProgressLabel,
-			});
-			if (!text) throw new VisionApiError('No readable text was found in this document.');
+			const extractedFiles: Array<{ filename: string; text: string }> = [];
+			for (const [index, currentFile] of filesToScan.entries()) {
+				const prefix = totalFiles > 1 ? `File ${index + 1} of ${totalFiles} · ` : '';
+				setProgressLabel(`${prefix}Preparing document`);
+				const text = await extractText(currentFile, apiKey?.trim(), {
+					onProgress: (value) =>
+						setProgress(
+							Math.min(98, Math.round((index * 100 + value) / totalFiles))
+						),
+					onLabel: (label) => setProgressLabel(`${prefix}${label}`),
+				});
+				if (!text)
+					throw new VisionApiError(
+						`No readable text was found in ${currentFile.name}.`
+					);
+				extractedFiles.push({ filename: currentFile.name, text });
+			}
+			const text = extractedFiles
+				.map(({ filename, text: extractedText }) =>
+					totalFiles > 1
+						? `===== ${filename} =====\n\n${extractedText}`
+						: extractedText
+				)
+				.join('\n\n')
+				.trim();
 			setProgress(100);
 			setProgressLabel('Extraction complete');
 			setResult(text);
-			setResultFilename(file.name);
+			setResultFilename(
+				totalFiles === 1 ? filesToScan[0].name : `${totalFiles}_files_${Date.now()}`
+			);
 			setSelectedHistoryId(null);
 			setStatus('complete');
-			await add(file.name, text);
+			for (const extractedFile of extractedFiles)
+				await add(extractedFile.filename, extractedFile.text);
 			navigateTo('extracted');
 		} catch (scanError) {
+			console.error(error);
+
 			setStatus('error');
 			setProgressLabel('Could not finish scan');
 			if (
@@ -121,7 +177,8 @@ export default function App() {
 	};
 
 	const reset = () => {
-		setFile(null);
+		setFiles([]);
+		setPreviewFile(null);
 		setResult('');
 		setResultFilename('');
 		setSelectedHistoryId(null);
@@ -156,7 +213,7 @@ export default function App() {
 	};
 
 	const selectHistory = (entry: Extraction) => {
-		setFile(null);
+		setFiles([]);
 		setResult(entry.text);
 		setResultFilename(entry.filename);
 		setSelectedHistoryId(entry.id);
@@ -177,9 +234,9 @@ export default function App() {
 		}
 	};
 
-	const handleClearHistory = async () => {
-		if (!window.confirm('Clear all saved extractions from this device?')) return;
+	const confirmClearHistory = async () => {
 		await clear();
+		setShowClearHistoryDialog(false);
 		setResult('');
 		setResultFilename('');
 		setSelectedHistoryId(null);
@@ -235,16 +292,27 @@ export default function App() {
 								<section className="grid min-w-0 grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.3fr)_minmax(20rem,0.7fr)]">
 									<UploadPanel
 										error={error}
-										file={file}
+										files={files}
 										inputRef={inputRef}
 										isDragging={isDragging}
+										onClear={reset}
 										onDragChange={setIsDragging}
 										onDrop={handleDrop}
-										onRemove={reset}
-										onSelect={selectFile}
+										onPreview={setPreviewFile}
+										onRemove={(index) => {
+											setFiles((current) =>
+												current.filter(
+													(_, fileIndex) => fileIndex !== index
+												)
+											);
+											setStatus('idle');
+											setProgress(0);
+											setProgressLabel('Ready to extract');
+										}}
+										onSelect={selectFiles}
 									/>
 									<ProgressPanel
-										file={file}
+										files={files}
 										label={progressLabel}
 										onStart={startScan}
 										progress={progress}
@@ -299,7 +367,7 @@ export default function App() {
 							<HistoryList
 								entries={history}
 								isLoading={isLoading}
-								onClear={() => void handleClearHistory()}
+								onClear={() => setShowClearHistoryDialog(true)}
 								onDelete={(entry) => void handleDeleteHistory(entry)}
 								onSelect={selectHistory}
 							/>
@@ -315,6 +383,29 @@ export default function App() {
 						value={apiKey}
 					/>
 				) : null}
+				<FilePreviewDialog file={previewFile} onClose={() => setPreviewFile(null)} />
+				<Dialog onOpenChange={setShowClearHistoryDialog} open={showClearHistoryDialog}>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Clear local history?</DialogTitle>
+							<DialogDescription>
+								This removes every saved extraction from this browser. Your
+								uploaded files are not stored.
+							</DialogDescription>
+						</DialogHeader>
+						<DialogFooter>
+							<DialogClose render={<Button variant="outline" />}>
+								Cancel
+							</DialogClose>
+							<Button
+								onClick={() => void confirmClearHistory()}
+								variant="destructive"
+							>
+								Clear history
+							</Button>
+						</DialogFooter>
+					</DialogContent>
+				</Dialog>
 			</SidebarProvider>
 		</TooltipProvider>
 	);

@@ -1,20 +1,18 @@
 import { CheckCircle2, Clock3, Layers3, LoaderCircle, ScanLine } from 'lucide-react';
-import type { Nullable } from 'toolbox-x/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { estimatedScanTime, fileKind } from '../../lib/vision';
 import type { ProcessStatus } from '../../types/ocr';
-import { Fragment } from 'react';
 
 type ProgressPanelProps = {
-	file: Nullable<File>;
+	files: File[];
 	status: ProcessStatus;
 	progress: number;
 	label: string;
 	onStart: () => void;
 };
 
-export function ProgressPanel({ file, status, progress, label, onStart }: ProgressPanelProps) {
+export function ProgressPanel({ files, status, progress, label, onStart }: ProgressPanelProps) {
 	const statusLabel =
 		status === 'processing'
 			? 'Processing'
@@ -91,36 +89,38 @@ export function ProgressPanel({ file, status, progress, label, onStart }: Progre
 					<span className="inline-flex items-center gap-2 text-muted-foreground">
 						<Clock3 className="size-4" /> Estimated time
 					</span>
-					<strong>{estimatedScanTime(file)}</strong>
+					<strong>{estimatedScanTime(files)}</strong>
 				</div>
 				<div className="flex items-center justify-between gap-3">
 					<span className="inline-flex items-center gap-2 text-muted-foreground">
 						<Layers3 className="size-4" /> Processing mode
 					</span>
 					<strong>
-						{file
-							? fileKind(file) === 'PDF'
-								? 'Page by page'
-								: 'Single image'
-							: 'Automatic'}
+						{files.length === 0
+							? 'Automatic'
+							: files.length > 1
+								? `${files.length} files · sequential`
+								: fileKind(files[0]) === 'PDF'
+									? 'Page by page'
+									: 'Single image'}
 					</strong>
 				</div>
 			</div>
 			<Button
 				className="mt-7 h-12 w-full gap-2 text-base"
-				disabled={!file || status === 'processing'}
+				disabled={files.length === 0 || status === 'processing'}
 				onClick={onStart}
 			>
 				{status === 'processing' ? (
-					<Fragment>
+					<>
 						<LoaderCircle className="size-5 animate-spin" /> Processing…
-					</Fragment>
+					</>
 				) : (
-					<Fragment>
+					<>
 						<ScanLine className="size-5" />{' '}
 						{status === 'complete' ? 'Scan again' : 'Start extraction'}
 						<span className="ml-auto hidden text-xs opacity-60 sm:inline">⌘ ↵</span>
-					</Fragment>
+					</>
 				)}
 			</Button>
 		</div>
