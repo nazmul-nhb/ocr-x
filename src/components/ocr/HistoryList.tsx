@@ -1,4 +1,5 @@
 import { Clock3, FileText, History, Trash2 } from 'lucide-react';
+import { formatRelativeDate } from 'toolbox-x/date';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { Extraction } from '../../types/ocr';
@@ -10,13 +11,6 @@ type HistoryListProps = {
 	onDelete: (entry: Extraction) => void;
 	onClear: () => void;
 };
-
-function formatDate(value: string) {
-	return new Intl.DateTimeFormat(undefined, {
-		dateStyle: 'medium',
-		timeStyle: 'short',
-	}).format(new Date(value));
-}
 
 export function HistoryList({
 	entries,
@@ -85,7 +79,7 @@ export function HistoryList({
 									</strong>
 									<small className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
 										<Clock3 className="size-3.5" />
-										{formatDate(entry.createdAt)} ·{' '}
+										{formatRelativeDate(entry.createdAt)} ·{' '}
 										{entry.text.length.toLocaleString()} characters
 									</small>
 									<span className="mt-3 block line-clamp-2 text-sm leading-6 text-muted-foreground">
