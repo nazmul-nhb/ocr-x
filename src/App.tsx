@@ -1,7 +1,8 @@
 import { FileOutput, ShieldCheck, Sparkles } from 'lucide-react';
 import { useCopyText, useStorage } from 'nhb-hooks';
 import type { DragEvent } from 'react';
-import { useCallback, useRef, useState } from 'react';
+import { Fragment, useCallback, useRef, useState } from 'react';
+import type { Nullable } from 'toolbox-x/types';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AppTabs } from './components/layout/AppTabs';
@@ -21,7 +22,7 @@ import { extractText, isAcceptedFile, VisionApiError } from './lib/vision';
 import type { Extraction, ProcessStatus } from './types/ocr';
 
 export default function App() {
-	const [file, setFile] = useState<File | null>(null);
+	const [file, setFile] = useState<Nullable<File>>(null);
 	const [status, setStatus] = useState<ProcessStatus>('idle');
 	const [progress, setProgress] = useState(0);
 	const [progressLabel, setProgressLabel] = useState('Ready when you are');
@@ -39,7 +40,7 @@ export default function App() {
 		deserialize: (value) => cipher.decrypt(value),
 	});
 
-	const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null);
+	const [selectedHistoryId, setSelectedHistoryId] = useState<Nullable<string>>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const { history, isLoading, add, remove, clear } = useHistory();
 	const { theme, toggleTheme } = useTheme();
@@ -230,7 +231,7 @@ export default function App() {
 							onChange={navigateTo}
 						/>
 						{activeTab === 'scan' && (
-							<>
+							<Fragment>
 								<section className="grid min-w-0 grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.3fr)_minmax(20rem,0.7fr)]">
 									<UploadPanel
 										error={error}
@@ -260,7 +261,7 @@ export default function App() {
 										contrast.
 									</p>
 								</div>
-							</>
+							</Fragment>
 						)}
 						{activeTab === 'extracted' &&
 							(result ? (

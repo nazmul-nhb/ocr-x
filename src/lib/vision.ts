@@ -1,5 +1,7 @@
 import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist';
+import { clampNumber } from 'toolbox-x';
 import { isNonEmptyString } from 'toolbox-x/guards';
+import type { Nullable } from 'toolbox-x/types';
 import { ACCEPTED_TYPES } from '../constants/ocr';
 import type { ConnectionLike, OnPage, ScanCallbacks } from '../types/ocr';
 
@@ -107,19 +109,22 @@ async function requestVision(content: string, apiKey: string) {
 async function renderPdfPages(file: File, onPage: OnPage) {
 	GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 	const document = await getDocument({ data: await file.arrayBuffer() }).promise;
+
 	const pageTexts: string[] = [];
-	for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1)
+	for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
 		pageTexts.push(await onPage(pageNumber, document.numPages, document));
+	}
+
 	return pageTexts;
 }
 
 function estimateDuration(file: File) {
-	const nav = navigator as Navigator & { connection?: ConnectionLike };
-	const downlink = Math.max(0.5, nav.connection?.downlink ?? 5);
+	const { connection } = navigator as Navigator & { connection?: ConnectionLike };
+	const downlink = Math.max(0.5, connection?.downlink ?? 5);
 	return Math.round((Math.max(1.8, file.size / (downlink * 125000)) + 4.5) * 10) / 10;
 }
 
-export function estimatedScanTime(file: File | null) {
+export function estimatedScanTime(file: Nullable<File>) {
 	return file ? `~${estimateDuration(file)} sec` : '—';
 }
 
@@ -127,15 +132,9 @@ export async function extractText(file: File, apiKey: string, callbacks: ScanCal
 	const expectedSeconds = estimateDuration(file);
 	const startedAt = Date.now();
 	const progressTimer = window.setInterval(() => {
-		callbacks.onProgress(
-			Math.min(
-				91,
-				Math.max(
-					4,
-					Math.round(((Date.now() - startedAt) / (expectedSeconds * 1000)) * 88) + 4
-				)
-			)
-		);
+		const val = Math.round(((Date.now() - startedAt) / (expectedSeconds * 1000)) * 88) + 4;
+
+		callbacks.onProgress(clampNumber(val, 4, 91));
 	}, 250);
 
 	try {

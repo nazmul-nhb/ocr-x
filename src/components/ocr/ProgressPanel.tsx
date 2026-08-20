@@ -1,11 +1,13 @@
 import { CheckCircle2, Clock3, Layers3, LoaderCircle, ScanLine } from 'lucide-react';
+import type { Nullable } from 'toolbox-x/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { estimatedScanTime, fileKind } from '../../lib/vision';
 import type { ProcessStatus } from '../../types/ocr';
+import { Fragment } from 'react';
 
 type ProgressPanelProps = {
-	file: File | null;
+	file: Nullable<File>;
 	status: ProcessStatus;
 	progress: number;
 	label: string;
@@ -59,7 +61,7 @@ export function ProgressPanel({ file, status, progress, label, onStart }: Progre
 						background: `conic-gradient(var(--primary) ${progress * 3.6}deg, var(--muted) 0deg)`,
 					}}
 				>
-					<div className="grid size-[4.25rem] place-items-center rounded-full bg-card text-primary">
+					<div className="grid size-17 place-items-center rounded-full bg-card text-primary">
 						{status === 'processing' ? (
 							<LoaderCircle className="size-6 animate-spin" />
 						) : status === 'complete' ? (
@@ -110,15 +112,15 @@ export function ProgressPanel({ file, status, progress, label, onStart }: Progre
 				onClick={onStart}
 			>
 				{status === 'processing' ? (
-					<>
+					<Fragment>
 						<LoaderCircle className="size-5 animate-spin" /> Processing…
-					</>
+					</Fragment>
 				) : (
-					<>
+					<Fragment>
 						<ScanLine className="size-5" />{' '}
 						{status === 'complete' ? 'Scan again' : 'Start extraction'}
 						<span className="ml-auto hidden text-xs opacity-60 sm:inline">⌘ ↵</span>
-					</>
+					</Fragment>
 				)}
 			</Button>
 		</div>

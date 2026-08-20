@@ -1,14 +1,15 @@
 import { FileText, Image, Sparkles, Upload, X } from 'lucide-react';
-import type { DragEvent, RefObject } from 'react';
+import { Fragment, type DragEvent, type RefObject } from 'react';
+import type { Nullable } from 'toolbox-x/types';
 import { MAX_FILE_SIZE } from '../../constants/ocr';
 import { cn } from '../../lib/utils';
 import { fileKind, formatBytes } from '../../lib/vision';
 
 type UploadPanelProps = {
-	file: File | null;
+	file: Nullable<File>;
 	error: string;
 	isDragging: boolean;
-	inputRef: RefObject<HTMLInputElement | null>;
+	inputRef: RefObject<Nullable<HTMLInputElement>>;
 	onSelect: (file: File) => void;
 	onDrop: (event: DragEvent<HTMLDivElement>) => void;
 	onDragChange: (dragging: boolean) => void;
@@ -26,11 +27,12 @@ export function UploadPanel({
 	onRemove,
 }: UploadPanelProps) {
 	const isPdf = file ? fileKind(file) === 'PDF' : false;
+
 	return (
 		<div className="min-w-0 rounded-2xl border bg-card p-3 shadow-sm sm:p-4">
 			<div
 				className={cn(
-					`relative flex min-h-76 flex-col  overflow-hidden rounded-xl border border-dashed p-6 text-center transition-colors sm:min-h-88`,
+					`relative flex min-h-76 flex-col overflow-hidden rounded-xl border border-dashed p-6 text-center transition-colors sm:min-h-88`,
 					{
 						'flex-row gap-4 sm:gap-5': file,
 						'items-start justify-start': file,
@@ -61,7 +63,7 @@ export function UploadPanel({
 					type="file"
 				/>
 				{file ? (
-					<>
+					<Fragment>
 						<div
 							className={`grid size-16 shrink-0 place-items-center rounded-2xl ${isPdf ? 'bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-primary/10 text-primary'}`}
 						>
@@ -90,9 +92,9 @@ export function UploadPanel({
 						>
 							<X className="size-5" />
 						</button>
-					</>
+					</Fragment>
 				) : (
-					<>
+					<Fragment>
 						<div className="mb-5 grid size-16 place-items-center rounded-2xl bg-primary/10 text-primary">
 							<Upload className="size-7" />
 						</div>
@@ -129,7 +131,7 @@ export function UploadPanel({
 								up to {MAX_FILE_SIZE / 1024 / 1024} MB
 							</span>
 						</div>
-					</>
+					</Fragment>
 				)}
 			</div>
 			{error ? (
