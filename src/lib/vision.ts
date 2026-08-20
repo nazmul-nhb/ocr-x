@@ -1,7 +1,7 @@
-import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist';
+import { isNonEmptyString } from 'toolbox-x/guards';
 import { ACCEPTED_TYPES } from '../constants/ocr';
-import type { ConnectionLike, ScanCallbacks } from '../types/ocr';
+import type { ConnectionLike, OnPage, ScanCallbacks } from '../types/ocr';
 
 const pdfWorkerUrl = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).toString();
 
@@ -46,12 +46,14 @@ function fileToDataUrl(file: File) {
 }
 
 async function requestVision(content: string, apiKey: string) {
-	if (!apiKey)
+	if (!isNonEmptyString(apiKey))
 		throw new VisionApiError(
 			'Google Vision needs an API key before it can read this file.',
 			'auth'
 		);
+
 	let response: Response;
+
 	try {
 		response = await fetch(
 			`https://vision.googleapis.com/v1/images:annotate?key=${encodeURIComponent(apiKey)}`,
@@ -102,10 +104,7 @@ async function requestVision(content: string, apiKey: string) {
 	);
 }
 
-async function renderPdfPages(
-	file: File,
-	onPage: (page: number, total: number, document: PDFDocumentProxy) => Promise<string>
-) {
+async function renderPdfPages(file: File, onPage: OnPage) {
 	GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 	const document = await getDocument({ data: await file.arrayBuffer() }).promise;
 	const pageTexts: string[] = [];

@@ -4,6 +4,6 @@ declare global {
 	interface Navigator extends ConnectionLike {}
 
 	interface Window {
-		navigator: Navigator;
+		navigator: Navigator & ConnectionLike;
 	}
 }

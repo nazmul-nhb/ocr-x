@@ -70,7 +70,7 @@ export function Sidebar({ activeTab, historyCount, onNewScan, onHistory }: Sideb
 								>
 									<FilePlus2 />
 									<span>New Scan</span>
-									<kbd className="ml-auto rounded border border-sidebar-border px-1.5 py-0.5 text-[10px] text-sidebar-foreground/50">
+									<kbd className="ml-auto rounded border border-sidebar-border px-1.5 py-1 text-[10px] text-sidebar-foreground/50 flex items-center justify-center">
 										N
 									</kbd>
 								</SidebarMenuButton>

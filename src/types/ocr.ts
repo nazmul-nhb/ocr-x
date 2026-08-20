@@ -1,4 +1,5 @@
 import type { InferSelectType } from 'locality-idb';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type { historySchema } from '../lib/history-db';
 
 export type ProcessStatus = 'idle' | 'processing' | 'complete' | 'error';
@@ -17,3 +18,9 @@ export type ScanCallbacks = {
 	onProgress: (value: number) => void;
 	onLabel: (value: string) => void;
 };
+
+export type OnPage = (
+	page: number,
+	total: number,
+	document: PDFDocumentProxy
+) => Promise<string>;
