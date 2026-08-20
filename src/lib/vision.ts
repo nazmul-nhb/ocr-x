@@ -115,8 +115,8 @@ async function renderPdfPages(
 }
 
 function estimateDuration(file: File) {
-	const connection = navigator as Navigator & { connection?: ConnectionLike };
-	const downlink = Math.max(0.5, connection.connection?.downlink ?? 5);
+	const nav = navigator as Navigator & { connection?: ConnectionLike };
+	const downlink = Math.max(0.5, nav.connection?.downlink ?? 5);
 	return Math.round((Math.max(1.8, file.size / (downlink * 125000)) + 4.5) * 10) / 10;
 }
 

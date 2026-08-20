@@ -1,20 +1,17 @@
+import type { InferSelectType } from 'locality-idb';
+import type { historySchema } from '../lib/history-db';
+
 export type ProcessStatus = 'idle' | 'processing' | 'complete' | 'error';
 
 export type Theme = 'light' | 'dark';
 
 export type AppTab = 'scan' | 'extracted' | 'history';
-export type ExtractionId = `${string}-${string}-${string}-${string}-${string}`;
 
 export type ConnectionLike = {
 	downlink?: number;
 };
 
-export type Extraction = {
-	id: ExtractionId;
-	filename: string;
-	text: string;
-	createdAt: string;
-};
+export type Extraction = InferSelectType<(typeof historySchema)['extractions']>;
 
 export type ScanCallbacks = {
 	onProgress: (value: number) => void;

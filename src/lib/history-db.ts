@@ -1,7 +1,6 @@
-import { column, defineSchema, Locality } from 'locality-idb';
-import type { Extraction, ExtractionId } from '../types/ocr';
+import { type $UUID, column, defineSchema, Locality } from 'locality-idb';
 
-const historySchema = defineSchema({
+export const historySchema = defineSchema({
 	extractions: {
 		id: column.uuid().pk(),
 		filename: column.text(),
@@ -10,29 +9,24 @@ const historySchema = defineSchema({
 	},
 });
 
-const historyDb = new Locality({ dbName: 'ocr-x-history', version: 1, schema: historySchema });
+export const historyDb = new Locality({
+	dbName: 'ocr-x-history',
+	version: 1,
+	schema: historySchema,
+});
 
 export async function listExtractions() {
-	await historyDb.ready();
-	const entries = await historyDb.from('extractions').findAll();
-	return entries
-		.sort((first, second) => second.createdAt.localeCompare(first.createdAt))
-		.slice(0, 12) as Extraction[];
+	return await historyDb.from('extractions').orderBy('createdAt', 'desc').findAll();
 }
 
 export async function saveExtraction(filename: string, text: string) {
-	await historyDb.ready();
-	return historyDb
-		.insert('extractions')
-		.values({ filename, text })
-		.run() as Promise<Extraction>;
+	return historyDb.insert('extractions').values({ filename, text }).run();
 }
 
-export async function deleteExtraction(id: ExtractionId) {
-	await historyDb.ready();
+export async function deleteExtraction(id: $UUID) {
 	await historyDb.delete('extractions').where('id', id).run();
 }
 
-export async function clearExtractions(entries: Extraction[]) {
-	await Promise.all(entries.map((entry) => deleteExtraction(entry.id)));
+export async function clearExtractions() {
+	await historyDb.clearTable('extractions');
 }

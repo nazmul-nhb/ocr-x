@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import type { Nullable } from 'toolbox-x/types';
 import type { AppTab } from '../types/ocr';
 
 const TAB_PARAM = 'tab';
@@ -7,7 +8,7 @@ const tabs: AppTab[] = ['scan', 'extracted', 'history'];
 function readTab() {
 	const requested = new URLSearchParams(window.location.search).get(
 		TAB_PARAM
-	) as AppTab | null;
+	) as Nullable<AppTab>;
 	return requested && tabs.includes(requested) ? requested : 'scan';
 }
 
