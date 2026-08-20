@@ -1,5 +1,4 @@
 import { FileText, Image as ImageIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import type { Nullable } from 'toolbox-x/types';
 import {
 	Dialog,
@@ -8,7 +7,9 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
+import { usePreviewUrl } from '@/hooks/usePreviewUrl';
 import { fileKind, formatBytes } from '@/lib/vision';
+import { ScrollArea } from '../ui/scroll-area';
 
 type FilePreviewDialogProps = {
 	file: Nullable<File>;
@@ -16,17 +17,7 @@ type FilePreviewDialogProps = {
 };
 
 export function FilePreviewDialog({ file, onClose }: FilePreviewDialogProps) {
-	const [previewUrl, setPreviewUrl] = useState<Nullable<string>>(null);
-
-	useEffect(() => {
-		if (!file) {
-			setPreviewUrl(null);
-			return;
-		}
-		const url = URL.createObjectURL(file);
-		setPreviewUrl(url);
-		return () => URL.revokeObjectURL(url);
-	}, [file]);
+	const previewUrl = usePreviewUrl(file);
 
 	const isPdf = file ? fileKind(file) === 'PDF' : false;
 
@@ -57,18 +48,20 @@ export function FilePreviewDialog({ file, onClose }: FilePreviewDialogProps) {
 					{previewUrl ? (
 						isPdf ? (
 							<iframe
-								className="h-[66vh] w-full rounded-lg border bg-background"
+								className="h-[66vh] w-full border bg-background"
 								src={previewUrl}
 								title={`Preview of ${file?.name ?? 'PDF'}`}
 							/>
 						) : (
-							<div className="flex min-h-full min-w-0 items-center justify-center">
-								<img
-									alt={`Preview of ${file?.name ?? 'image'}`}
-									className="block h-auto max-h-[66vh] w-auto max-w-full rounded-lg object-contain"
-									src={previewUrl}
-								/>
-							</div>
+							<ScrollArea className="min-h-0 flex-1">
+								<div className="flex min-h-full min-w-0 items-center justify-center">
+									<img
+										alt={`Preview of ${file?.name ?? 'image'}`}
+										className="block h-auto max-h-[66vh] w-auto max-w-full object-contain"
+										src={previewUrl}
+									/>
+								</div>
+							</ScrollArea>
 						)
 					) : null}
 				</div>

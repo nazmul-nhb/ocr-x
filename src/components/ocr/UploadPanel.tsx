@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MAX_FILE_SIZE } from '@/constants/ocr';
 import { cn } from '@/lib/utils';
 import { fileKind, formatBytes } from '@/lib/vision';
+import FileToImage from './FileToImage';
 
 type UploadPanelProps = {
 	files: File[];
@@ -121,15 +122,19 @@ export function UploadPanel({
 													{fileKind(file)} · {formatBytes(file.size)}
 												</span>
 											</span>
-											<Button
-												aria-label={`Preview ${file.name}`}
-												className="shrink-0"
-												onClick={() => onPreview(file)}
-												size="icon"
-												variant="ghost"
-											>
-												<Eye className="size-4" />
-											</Button>
+											{file && fileKind(file) === 'IMAGE' ? (
+												<FileToImage file={file} />
+											) : (
+												<Button
+													aria-label={`Preview ${file.name}`}
+													className="shrink-0"
+													onClick={() => onPreview(file)}
+													size="icon"
+													variant="ghost"
+												>
+													<Eye className="size-4" />
+												</Button>
+											)}
 											<Button
 												aria-label={`Remove ${file.name}`}
 												className="shrink-0 text-muted-foreground hover:text-destructive"
