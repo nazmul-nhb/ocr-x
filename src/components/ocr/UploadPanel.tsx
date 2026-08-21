@@ -1,10 +1,19 @@
-import { Eye, FileText, Image, Sparkles, Upload, X } from 'lucide-react';
+import {
+	BookOpenText,
+	BroomSparkles,
+	FileText,
+	Image,
+	Sparkles,
+	Upload,
+	X,
+} from 'lucide-react';
 import { type DragEvent, Fragment, type RefObject } from 'react';
 import { formatWithPlural } from 'toolbox-x';
 import type { Nullable } from 'toolbox-x/types';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MAX_FILE_SIZE } from '@/constants/ocr';
+import { useOS } from '@/hooks/useOS';
 import { cn } from '@/lib/utils';
 import { fileKind, formatBytes } from '@/lib/vision';
 import FileToImage from './FileToImage';
@@ -34,6 +43,8 @@ export function UploadPanel({
 	onRemove,
 	onClear,
 }: UploadPanelProps) {
+	const os = useOS();
+
 	return (
 		<div className="min-w-0 rounded-2xl border bg-card p-3 shadow-sm sm:p-4">
 			<div
@@ -129,12 +140,17 @@ export function UploadPanel({
 											) : (
 												<Button
 													aria-label={`Preview ${file.name}`}
-													className="shrink-0"
+													className="shrink-0 rounded-sm p-2 size-10 text-destructive hover:bg-destructive/20 dark:hover:bg-destructive/30"
+													disabled={
+														os === 'ios' ||
+														os === 'android' ||
+														os === 'undetermined'
+													}
 													onClick={() => onPreview(file)}
-													size="icon"
+													size="icon-lg"
 													variant="ghost"
 												>
-													<Eye className="size-4" />
+													<BookOpenText className="size-7.5" />
 												</Button>
 											)}
 											<Button
@@ -161,7 +177,7 @@ export function UploadPanel({
 								size="sm"
 								variant="destructive"
 							>
-								Clear selection
+								<BroomSparkles className="size-3.5" /> Clear selection
 							</Button>
 						</div>
 					</Fragment>

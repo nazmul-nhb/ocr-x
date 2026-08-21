@@ -20,7 +20,7 @@ export default function FileToImage({ file }: Props) {
 				mask: { blur: true },
 			}}
 			src={previewUrl || './icon.svg'}
-			style={{ aspectRatio: 0.96 }}
+			style={{ aspectRatio: 1, objectFit: 'contain' }}
 		/>
 	);
 }
