@@ -1,4 +1,5 @@
 import { CheckCircle2, Clock3, Layers3, LoaderCircle, ScanLine } from 'lucide-react';
+import { Fragment } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { estimatedScanTime, fileKind } from '../../lib/vision';
@@ -65,7 +66,7 @@ export function ProgressPanel({ files, status, progress, label, onStart }: Progr
 						) : status === 'complete' ? (
 							<CheckCircle2 className="size-6 text-emerald-500" />
 						) : (
-							<span className="text-lg font-semibold">{progress}%</span>
+							<span className="text-lg font-semibold">...</span>
 						)}
 					</div>
 				</div>
@@ -112,15 +113,15 @@ export function ProgressPanel({ files, status, progress, label, onStart }: Progr
 				onClick={onStart}
 			>
 				{status === 'processing' ? (
-					<>
+					<Fragment>
 						<LoaderCircle className="size-5 animate-spin" /> Processing…
-					</>
+					</Fragment>
 				) : (
-					<>
+					<Fragment>
 						<ScanLine className="size-5" />{' '}
 						{status === 'complete' ? 'Scan again' : 'Start extraction'}
 						<span className="ml-auto hidden text-xs opacity-60 sm:inline">⌘ ↵</span>
-					</>
+					</Fragment>
 				)}
 			</Button>
 		</div>

@@ -1,4 +1,5 @@
 import { Clock3, FileText, History, Trash2 } from 'lucide-react';
+import { truncateString } from 'toolbox-x';
 import { formatRelativeDate } from 'toolbox-x/date';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -80,11 +81,13 @@ export function HistoryList({
 									<small className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
 										<Clock3 className="size-3.5" />
 										{formatRelativeDate(entry.createdAt)} ·{' '}
-										{entry.text.length.toLocaleString()} characters
+										{entry.text.length} characters
 									</small>
 									<span className="mt-3 block line-clamp-2 text-sm leading-6 text-muted-foreground">
-										{entry.text.slice(0, 110).replace(/\s+/g, ' ')}
-										{entry.text.length > 110 ? '…' : ''}
+										{truncateString(entry.text, {
+											maxLength: 110,
+											trim: true,
+										})}
 									</span>
 								</span>
 							</button>

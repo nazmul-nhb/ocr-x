@@ -73,7 +73,8 @@
 				}
 			},
 			"style": {
-				"useImportType": "warn"
+				"useImportType": "warn",
+				"useComponentExportOnlyModules": "error"
 			},
 			"correctness": {
 				"preset": "recommended",

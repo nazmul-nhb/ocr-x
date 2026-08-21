@@ -5,8 +5,9 @@ import {
 	deleteExtraction,
 	listExtractions,
 	saveExtraction,
-} from '../lib/history-db';
-import type { Extraction } from '../types/ocr';
+	updateExtraction,
+} from '@/lib/history-db';
+import type { Extraction } from '@/types/ocr';
 
 export function useHistory() {
 	const [history, setHistory] = useState<Extraction[]>([]);
@@ -42,5 +43,13 @@ export function useHistory() {
 		setHistory([]);
 	}, []);
 
-	return { history, isLoading, add, remove, clear, refresh };
+	const update = useCallback(
+		async (id: $UUID, text: string) => {
+			await updateExtraction(id, text);
+			refresh();
+		},
+		[refresh]
+	);
+
+	return { history, isLoading, add, remove, update, clear, refresh };
 }

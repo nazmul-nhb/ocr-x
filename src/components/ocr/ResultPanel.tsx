@@ -7,7 +7,7 @@ type ResultPanelProps = {
 	filename: string;
 	text: string;
 	copied: boolean;
-	onTextChange: (text: string) => void;
+	onTextChange: (text: string) => Promise<void>;
 	onCopy: () => void;
 	onDownload: () => void;
 };
@@ -51,7 +51,7 @@ export function ResultPanel({
 				<Textarea
 					aria-label={`Extracted text from ${filename}`}
 					className="resize-y font-mono text-sm leading-7 sm:text-base rounded-none"
-					onChange={(event) => onTextChange(event.target.value)}
+					onChange={async (event) => await onTextChange(event.target.value)}
 					spellCheck="false"
 					value={text}
 				/>

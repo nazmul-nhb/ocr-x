@@ -1,5 +1,5 @@
 import type { $UUID } from 'locality-idb';
-import { FileOutput, ShieldCheck, Sparkles } from 'lucide-react';
+import { FileOutput, ScanText, ShieldCheck, Sparkles } from 'lucide-react';
 import { useCopyText, useStorage } from 'nhb-hooks';
 import type { DragEvent } from 'react';
 import { Fragment, useCallback, useRef, useState } from 'react';
@@ -56,7 +56,7 @@ export default function App() {
 
 	const [selectedHistoryId, setSelectedHistoryId] = useState<Nullable<$UUID>>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
-	const { history, isLoading, add, remove, clear } = useHistory();
+	const { history, isLoading, add, remove, clear, update } = useHistory();
 	const { theme, toggleTheme } = useTheme();
 	const { activeTab, navigateTo } = useTabNavigation();
 
@@ -340,11 +340,17 @@ export default function App() {
 										copyToClipboard(result, 'Text copied successfully!');
 									}}
 									onDownload={downloadResult}
-									onTextChange={setResult}
+									onTextChange={async (text) => {
+										setResult(text);
+
+										if (selectedHistoryId) {
+											await update(selectedHistoryId, text);
+										}
+									}}
 									text={result}
 								/>
 							) : (
-								<div className="flex min-h-88 flex-col items-center justify-center rounded-2xl border border-dashed bg-card px-6 py-12 text-center shadow-sm">
+								<div className="flex min-h-88 flex-col items-center justify-center rounded-2xl border border-dashed bg-card px-6 py-12 text-center shadow-sm gap-2">
 									<span className="mb-4 grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
 										<FileOutput className="size-6" />
 									</span>
@@ -354,13 +360,14 @@ export default function App() {
 									<span className="mt-2 text-base leading-7 text-muted-foreground">
 										Run a scan or choose from History to edit its text.
 									</span>
-									<button
-										className="mt-6 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
+									<Button
 										onClick={() => navigateTo('scan')}
-										type="button"
+										size="lg"
+										variant="outline"
 									>
-										Start a scan
-									</button>
+										<ScanText />
+										Start Scanning
+									</Button>
 								</div>
 							))}
 						{activeTab === 'history' && (

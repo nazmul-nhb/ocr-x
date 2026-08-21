@@ -1,5 +1,6 @@
 import { Eye, FileText, Image, Sparkles, Upload, X } from 'lucide-react';
 import { type DragEvent, Fragment, type RefObject } from 'react';
+import { formatWithPlural } from 'toolbox-x';
 import type { Nullable } from 'toolbox-x/types';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -56,7 +57,7 @@ export function UploadPanel({
 				onDrop={onDrop}
 			>
 				<input
-					accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+					accept="image/jpeg,image/png,image/webp,application/pdf"
 					className="absolute inset-0 z-10 cursor-pointer opacity-0"
 					multiple
 					onChange={(event) => {
@@ -72,11 +73,12 @@ export function UploadPanel({
 						<div className="relative z-20 flex w-full items-center justify-between gap-3 border-b pb-4 text-left">
 							<div>
 								<h2 className="text-lg font-semibold tracking-tight sm:text-xl">
-									Files ready to scan
+									{formatWithPlural(files.length, 'File', false)} ready to
+									scan
 								</h2>
 								<p className="mt-1 text-sm text-muted-foreground">
-									{files.length} {files.length === 1 ? 'file' : 'files'}{' '}
-									selected · will be processed in order
+									{formatWithPlural(files.length, 'file')} selected
+									{files.length > 1 ? ' · will be processed in order' : ''}
 								</p>
 							</div>
 							<Button
@@ -91,7 +93,7 @@ export function UploadPanel({
 							</Button>
 						</div>
 						<ScrollArea className="h-60">
-							<div className="relative z-20 w-full space-y-2 overflow-y-auto py-4 pr-4 text-left ">
+							<div className="relative z-20 w-full space-y-2 overflow-y-auto py-4 px-2.5 text-left ">
 								{files.map((file, index) => {
 									const isPdf = fileKind(file) === 'PDF';
 

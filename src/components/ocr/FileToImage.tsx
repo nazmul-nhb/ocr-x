@@ -19,7 +19,7 @@ export default function FileToImage({ file }: Props) {
 				scaleStep: 0.25,
 				mask: { blur: true },
 			}}
-			src={previewUrl}
+			src={previewUrl || './icon.svg'}
 			style={{ aspectRatio: 0.96 }}
 		/>
 	);

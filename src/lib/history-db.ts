@@ -23,6 +23,10 @@ export async function saveExtraction(filename: string, text: string) {
 	return historyDb.insert('extractions').values({ filename, text }).run();
 }
 
+export async function updateExtraction(id: $UUID, text: string) {
+	return historyDb.update('extractions').set({ text }).where('id', id).run();
+}
+
 export async function deleteExtraction(id: $UUID) {
 	await historyDb.delete('extractions').where('id', id).run();
 }
