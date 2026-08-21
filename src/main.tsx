@@ -1,5 +1,6 @@
 import './styles.css';
 
+import { TitleProvider } from 'nhb-hooks';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -9,6 +10,8 @@ const root = document.getElementById('root') as HTMLElement;
 
 createRoot(root).render(
 	<StrictMode>
-		<App />
+		<TitleProvider config={{ siteTitle: 'OCR X by Nazmul Hassan' }}>
+			<App />
+		</TitleProvider>
 	</StrictMode>
 );

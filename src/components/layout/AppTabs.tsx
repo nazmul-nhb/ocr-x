@@ -1,6 +1,8 @@
 import { FileOutput, FileScan, History } from 'lucide-react';
+import { useTitle } from 'nhb-hooks';
+import { toTitleCase } from 'toolbox-x/change-case';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { AppTab } from '../../types/ocr';
+import type { AppTab } from '@/types/ocr';
 
 type AppTabsProps = {
 	activeTab: AppTab;
@@ -10,6 +12,8 @@ type AppTabsProps = {
 };
 
 export function AppTabs({ activeTab, onChange, hasResult, historyCount }: AppTabsProps) {
+	useTitle(toTitleCase(activeTab));
+
 	return (
 		<Tabs className="mb-6 w-full" onValueChange={onChange} value={activeTab}>
 			<TabsList variant="line">
